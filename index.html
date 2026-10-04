@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sepak Kuis 💗</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #ffe3ef, #ffd1e3, #ffeaf4);
+    color: #7a4a5e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 520px;
+    background: #fff7fa;
+    border: 2px solid #ffc2d9;
+    border-radius: 28px;
+    padding: 28px;
+    box-shadow: 0 12px 30px rgba(255, 170, 200, .35);
+    text-align: center;
+    position: relative;
+  }
+
+  .title {
+    font-size: 30px;
+    font-weight: 800;
+    color: #ff77a9;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    font-size: 15px;
+    margin-bottom: 22px;
+    color: #b06a85;
+  }
+
+  input {
+    width: 100%;
+    padding: 14px;
+    margin: 10px 0 16px;
+    border-radius: 16px;
+    border: 2px solid #ffc2d9;
+    background: #fff;
+    font-size: 16px;
+    text-align: center;
+    outline: none;
+  }
+
+  input:focus {
+    border-color: #ff77a9;
+  }
+
+  button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 18px;
+    background: #ff8fb8;
+    color: white;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s;
+  }
+
+  button:hover {
+    background: #ff6fa4;
+    transform: translateY(-2px);
+  }
+
+  .choice {
+    display: block;
+    width: 100%;
+    margin: 12px 0;
+    padding: 16px;
+    border-radius: 18px;
+    border: 2px solid #ffc2d9;
+    background: #fff;
+    color: #7a4a5e;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .2s;
+  }
+
+  .choice:hover {
+    background: #ffe3ef;
+    border-color: #ff8fb8;
+  }
+
+  .choice.correct {
+    background: #d9f7e6;
+    border-color: #7fdcae;
+    color: #2e7d5b;
+  }
+
+  .choice.wrong {
+    background: #ffe0e0;
+    border-color: #ff9d9d;
+    color: #b34545;
+  }
+
+  .feedback {
+    min-height: 28px;
+    font-weight: 700;
+    margin: 14px 0;
+  }
+
+  .feedback.correct {
+    color: #2e9e6b;
+  }
+
+  .feedback.wrong {
+    color: #e05252;
+  }
+
+  .progress {
+    font-size: 14px;
+    color: #b06a85;
+    margin-bottom: 12px;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .score {
+    font-size: 44px;
+    font-weight: 800;
+    color: #ff77a9;
+    margin: 10px 0;
+  }
+
+  .note {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    background: rgba(255, 255, 255, .75);
+    border: 1px solid #ffc2d9;
+    color: #b06a85;
+    padding: 6px 10px;
+    font-size: 11px;
+    border-radius: 12px;
+    backdrop-filter: blur(4px);
+  }
+
+  .heart {
+    font-size: 40px;
+    margin-bottom: 6px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <!-- Halaman 1: Kunci -->
+  <div id="lockScreen">
+    <div class="heart">🔒💗</div>
+    <h1 class="title">Sepak Kuis</h1>
+    <p class="subtitle">Masukkan kata sandi untuk memulai kuis.</p>
+
+    <input type="password" id="passwordInput" placeholder="Kata sandi">
+    <button onclick="unlockQuiz()">Buka Kuis</button>
+
+    <p class="feedback" id="lockFeedback"></p>
+  </div>
+
+  <!-- Halaman Kuis -->
+  <div id="quizScreen" class="hidden">
+    <h1 class="title">Sepak Kuis 💗</h1>
+    <p class="progress" id="progressText"></p>
+    <h2 id="questionText"></h2>
+
+    <div id="choicesContainer"></div>
+    <p class="feedback" id="feedbackText"></p>
+  </div>
+
+  <!-- Halaman Akhir -->
+  <div id="resultScreen" class="hidden">
+    <div class="heart">💖</div>
+    <h1 class="title">Thank you for answering my questions</h1>
+    <p class="subtitle">Ini skor jawaban kamu:</p>
+    <div class="score" id="finalScore"></div>
+    <p class="subtitle" id="scoreMessage"></p>
+    <button onclick="restartQuiz()">Main Lagi</button>
+  </div>
+</div>
+
+<div class="note">catatan kata sandi: 1802</div>
+
+<script>
+  // ================================
+  // ATUR SOAL DI SINI SAJA
+  // Ubah teks, pilihan, dan jawaban di bawah ini.
+  // Hanya kamu yang mengubah bagian ini di dalam kode.
+  // ================================
+  const questions = [
+    {
+      question: "1. What is my favorite color?",
+      choices: ["Pink", "Blue"],
+      answer: "Pink"
+    },
+    {
+      question: "2. What date is my birthday?",
+      choices: ["18", "10"],
+      answer: "18"
+    },
+    {
+      question: "3. What month was I born?",
+      choices: ["February", "May"],
+      answer: "February"
+    },
+    {
+      question: "4. In which application did we meet?",
+      choices: ["Hellotalk", "Yelltak"],
+      answer: "Hellotalk"
+    },
+    {
+      question: "5. What is my hobby?",
+      choices: ["Shopping", "Eat"],
+      answer: "Shopping"
+    },
+    {
+      question: "6. What date did we become a couple?",
+      choices: ["Monday 07-09", "Sunday 13-09"],
+      answer: "Monday 07-09"
+    },
+    {
+      question: "7. What is my idol's name?",
+      choices: ["Maxyiou", "Zhangli"],
+      answer: "Maxyiou"
+    },
+    {
+      question: "8. Which country do I live in?",
+      choices: ["Indonesia", "China"],
+      answer: "Indonesia"
+    },
+    {
+      question: "9. Where do I live?",
+      choices: ["Medan", "Jakarta"],
+      answer: "Medan"
+    },
+    {
+      question: "10. What is my nickname for you?",
+      choices: ["Giraffe", "Small"],
+      answer: "Giraffe"
+    },
+    {
+      question: "11. What is my favorite thing about us?",
+      choices: ["Our memories", "Nothing"],
+      answer: "Our memories"
+    }
+  ];
+
+  const PASSWORD = "1802";
+
+  let currentQuestion = 0;
+  let score = 0;
+  let answered = false;
+
+  const lockScreen = document.getElementById("lockScreen");
+  const quizScreen = document.getElementById("quizScreen");
+  const resultScreen = document.getElementById("resultScreen");
+  const passwordInput = document.getElementById("passwordInput");
+  const lockFeedback = document.getElementById("lockFeedback");
+  const questionText = document.getElementById("questionText");
+  const choicesContainer = document.getElementById("choicesContainer");
+  const feedbackText = document.getElementById("feedbackText");
+  const progressText = document.getElementById("progressText");
+  const finalScore = document.getElementById("finalScore");
+  const scoreMessage = document.getElementById("scoreMessage");
+
+  function unlockQuiz() {
+    if (passwordInput.value === PASSWORD) {
+      lockScreen.classList.add("hidden");
+      quizScreen.classList.remove("hidden");
+      currentQuestion = 0;
+      score = 0;
+      showQuestion();
+    } else {
+      lockFeedback.textContent = "Wrong password. Try again!";
+      lockFeedback.className = "feedback wrong";
+      passwordInput.value = "";
+    }
+  }
+
+  function showQuestion() {
+    answered = false;
+    feedbackText.textContent = "";
+    feedbackText.className = "feedback";
+
+    const q = questions[currentQuestion];
+    progressText.textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+    questionText.textContent = q.question;
+    choicesContainer.innerHTML = "";
+
+    q.choices.forEach(choice => {
+      const btn = document.createElement("button");
+      btn.className = "choice";
+      btn.textContent = choice;
+      btn.onclick = () => checkAnswer(choice, btn);
+      choicesContainer.appendChild(btn);
+    });
+  }
+
+  function checkAnswer(selected, button) {
+    if (answered) return;
+    answered = true;
+
+    const correctAnswer = questions[currentQuestion].answer;
+
+    if (selected === correctAnswer) {
+      score++;
+      button.classList.add("correct");
+      feedbackText.textContent = "Your answer is correct";
+      feedbackText.className = "feedback correct";
+    } else {
+      button.classList.add("wrong");
+      feedbackText.textContent = "Your answer is wrong";
+      feedbackText.className = "feedback wrong";
+
+      Array.from(choicesContainer.children).forEach(btn => {
+        if (btn.textContent === correctAnswer) {
+          btn.classList.add("correct");
+        }
+      });
+    }
+
+    setTimeout(() => {
+      currentQuestion++;
+
+      if (currentQuestion < questions.length) {
+        showQuestion();
+      } else {
+        showResult();
+      }
+    }, 1600);
+  }
+
+  function showResult() {
+    quizScreen.classList.add("hidden");
+    resultScreen.classList.remove("hidden");
+
+    finalScore.textContent = `${score} / ${questions.length}`;
+
+    if (score === questions.length) {
+      scoreMessage.textContent = "Perfect score! You know me so well 💗";
+    } else if (score >= 8) {
+      scoreMessage.textContent = "Amazing! You did great 💕";
+    } else if (score >= 5) {
+      scoreMessage.textContent = "Good job! Thank you for trying 🌸";
+    } else {
+      scoreMessage.textContent = "Thank you for answering my questions 💗";
+    }
+  }
+
+  function restartQuiz() {
+    resultScreen.classList.add("hidden");
+    lockScreen.classList.remove("hidden");
+    passwordInput.value = "";
+    lockFeedback.textContent = "";
+    lockFeedback.className = "feedback";
+  }
+
+  passwordInput.addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+      unlockQuiz();
+    }
+  });
+</script>
+
+</body>
+</html>
